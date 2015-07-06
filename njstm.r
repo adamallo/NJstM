@@ -64,12 +64,12 @@ NJstM.mapping=function(genetreesfile,mapping_file,method="original")
 	NJstM(genetrees,s_names,g_names,species.structure,method)
 }
 
-#iargs <- commandArgs(TRUE)
-#if (length(args)!=4){
-#	print("Usage Rscript rjstm.r treefile mapping method outputfile")
-#	quit()
-#}else{
-#	print(sprintf("Input tree file %s, mapping %s, method %s, outputfile %s",args[1],args[2],args[3],args[4]))
-#}
-#outtree=NJstM.mapping(args[1],args[2],args[3])
-#write.tree.string(outtree, format = "Phylip", file = args[4])
+args <- commandArgs(TRUE)
+if (length(args)!=4){
+	print("Usage Rscript rjstm.r treefile mapping method outputfile")
+	quit()
+}else{
+	print(sprintf("Input tree file %s, mapping %s, method %s, outputfile %s",args[1],args[2],args[3],args[4]))
+}
+outtree=NJstM.mapping(args[1],args[2],args[3])
+write.tree.string(outtree, format = "Phylip", file = args[4])
