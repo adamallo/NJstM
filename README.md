@@ -24,7 +24,7 @@ We implemented two different modifications of the original phybase package NJst 
  
 * **Reweighed**: reweights the average gene-tree internode distances (AGID) prior to the usage of the NJ reconstruction methods in order to give the same weight to every gene tree. The original algorithm indirectly gives more weight to gene trees with more individuals per species. 
 
-**Important**: Both modified versions of the original NJst function directly discard information from missing species for certain gene families, only taking into account valid comparisons. Nevertheless, it inherits the same limitations with missing combinations across study (i.e., species A is never present when species B is present across all gene families) and the same potential problems with not random missing data. **The comparative reconstruction accuracies of these different algorithms has not been comprehensively tested yet**
+**Important**: Both modified versions of the original NJst function directly discard information from missing species for certain gene families, only taking into account valid comparisons. Nevertheless, it inherits the same limitations with missing combinations across study (i.e., species A is never present when species B is present across all gene families) and the same potential problems with not random missing data. **The comparative reconstruction accuracies of these different algorithms have not been comprehensively tested yet**.
 
 Input file format:
 ------------------
