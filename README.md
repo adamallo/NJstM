@@ -1,5 +1,5 @@
 # NJstM
-Modified version of NJst to better accommodate missing data.
+Modified version of NJst trying to better accommodate missing data.
 
 This R script implements a modified version of the species tree reconstruction method NJst (Liu and Yu, 2011), and relies on the [phybase R package](https://faculty.franklin.uga.edu/lliu/content/phybase?).
 
@@ -18,7 +18,13 @@ Usage:
 
 Algorithms:
 ----------
-We implemented two different modifications of the original phybase package, called "original" and "reweighed". The first, directly implements the algorithm as described in the paper, which actually differs from the NJst function distributed with the phybase package when the number of individuals per species is not constant. The second, reweights the distances prior to the usage of the NJ reconstruction methods in order to give the same weight to every gene tree, since the original algorithm gives more weight to gene trees with more individuals per species. Both modified versions of the original NJst function can handle missing species in certain gene families much better than the original, inheriting the same limitations with missing combinations across study (i.e., species A is never present when species B is present across all gene families).
+We implemented two different modifications of the original phybase package NJst function, called "original" and "reweighed".
+
+* **Original**: directly implements the algorithm as described in the paper, **which actually differs from the NJst function distributed with the phybase package when the number of individuals per species is not constant**.
+ 
+* **Reweighed**: reweights the average gene-tree internode distances (AGID) prior to the usage of the NJ reconstruction methods in order to give the same weight to every gene tree. The original algorithm indirectly gives more weight to gene trees with more individuals per species. 
+
+**Important**: Both modified versions of the original NJst function directly discard information from missing species for certain gene families, only taking into account valid comparisons. Nevertheless, it inherits the same limitations with missing combinations across study (i.e., species A is never present when species B is present across all gene families) and the same potential problems with not random missing data. **The comparative reconstruction accuracies of these different algorithms has not been comprehensively tested yet**
 
 Input file format:
 ------------------
@@ -30,3 +36,6 @@ Input file format:
 2_B B
 1_C C
 ```
+
+If you code the gene copies and species using the same scheme than the one in the example (genecopy=id_species), you can generate the mapping file using the following bash line on the input tree file:
+`cat treefile |sed -e "s/:[^),]*//g" -e "s/)[0-9.]*//g" -e "s/[(,);]/ /g" -e 's/ /\'$'\n''/g' |sort|uniq|tail -n+2|gsed "s/.*\_\(.*\)$/& \1/" > mapping`
