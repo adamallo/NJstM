@@ -10,11 +10,11 @@ You can directly grab the NJstM and pair.dist.nofreq.dm functions from this scri
 
 Usage:
 -----
-Rscript njstm.r treefile mapping method outputfile  
-*treefile: File with all your gene trees in phylip format.
-*mapping: gene-copy/species mapping file.
-*method: NJstM algorithm you want to use.
-*outputfile: name of the reconstructed species tree (it will be saved in phylip format).
+`Rscript njstm.r treefile mapping method outputfile`  
+* **treefile**: File with all your gene trees in phylip format.
+* **mapping**: gene-copy/species mapping file.
+* **method**: NJstM algorithm you want to use.
+* **outputfile**: name of the reconstructed species tree (it will be saved in phylip format).
 
 Algorithms:
 ----------
@@ -22,10 +22,11 @@ We implemented two different modifications of the original phybase package, call
 
 Input file format:
 ------------------
-*Mapping: The gene copy/species mapping is a simple table with two columns separated by one empty space. The first column identifies the gene copy and the second the species it pertain to. Example:
-  1_A A
-  2_A A
-  1_B B
-  2_B B
-  1_C C
-
+* **Mapping**: The gene copy/species mapping is a simple table with two columns separated by one empty space. The first column identifies the gene copy and the second the species it pertain to. Example:
+```
+1_A A
+2_A A
+1_B B
+2_B B
+1_C C
+```
