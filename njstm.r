@@ -5,7 +5,27 @@ pair.dist.nofreq.dm=function (dist, species.structure) #Returns a matrix of spec
     diag(dis) <- 0
     dis
 }
-
+nancdist<-function(tree, taxaname)
+{
+        ntaxa<-length(taxaname)
+        nodematrix<-read.tree.nodes(tree,taxaname)$nodes
+        if(is.rootedtree(nodematrix)) nodematrix<-unroottree(nodematrix)
+        dist<-matrix(0, ntaxa,ntaxa)
+        for(i in 1:(ntaxa-1))
+                for(j in (i+1):ntaxa)
+                {
+                anc1<-ancestor(i,nodematrix)
+                anc2<-ancestor(j,nodematrix)
+                n<-sum(which(t(matrix(rep(anc1,length(anc2)),ncol=length(anc2)))-anc2==0, arr.ind=TRUE)[1,])-3
+                if(n==-1) n<-0
+                dist[i,j]<-n
+                }
+        dist<-dist+t(dist)
+        z<-list(dist=as.matrix, taxaname=as.vector)
+        z$dist<-dist
+        z$taxaname<-taxaname
+        z
+}
 NJstM=function(genetrees,s_names,g_names,species.structure,method="original")
 {
     ntree <- length(genetrees)
@@ -61,7 +81,11 @@ NJstM.mapping=function(genetreesfile,mapping_file,method="original")
 	g_names=colnames(species.structure)
 	genetrees=read.tree.string(genetreesfile,format="phylip")
 	genetrees=genetrees$tree
-	NJstM(genetrees,s_names,g_names,species.structure,method)
+	if (method=="liu" || "Liu") {
+		NJst(genetrees,g_names,s_names,species.structure)
+	} else {
+		NJstM(genetrees,s_names,g_names,species.structure,method)
+	}
 }
 
 args <- commandArgs(TRUE)
