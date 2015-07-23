@@ -1,10 +1,4 @@
-pair.dist.nofreq.dm=function (dist, species.structure) #Returns a matrix of species comparisons with the sum of distances between all their gene copies
-{
-    dis <- round((species.structure) %*% dist %*% t(species.structure), 
-        8)
-    diag(dis) <- 0
-    dis
-}
+###Original###
 nancdist<-function(tree, taxaname)
 {
         ntaxa<-length(taxaname)
@@ -25,6 +19,52 @@ nancdist<-function(tree, taxaname)
         z$dist<-dist
         z$taxaname<-taxaname
         z
+}
+
+NJst=function(genetrees, taxaname, spname, species.structure) 
+{
+    ntree <- length(genetrees)
+    ntaxa <- length(taxaname)
+    dist <- matrix(0, nrow = ntree, ncol = ntaxa * ntaxa)
+    for (i in 1:ntree) {
+        genetree1 <- read.tree.nodes(genetrees[i])
+        thistreetaxa <- genetree1$names
+        ntaxaofthistree <- length(thistreetaxa)
+        thistreenode <- rep(-1, ntaxaofthistree)
+        dist1 <- matrix(0, ntaxa, ntaxa)
+        for (j in 1:ntaxaofthistree) {
+            thistreenode[j] <- which(taxaname == thistreetaxa[j])
+            if (length(thistreenode[j]) == 0) {
+                print(paste("wrong taxaname", thistreetaxa[j], 
+                  "in gene", i))
+                return(0)
+            }
+        }
+        dist1[thistreenode, thistreenode] <- nancdist(genetrees[i], 
+            thistreetaxa)$dist
+        dist[i, ] <- as.numeric(dist1)
+    }
+    dist[dist == 0] <- NA
+    dist2 <- matrix(apply(dist, 2, mean, na.rm = TRUE), ntaxa, 
+        ntaxa)
+    diag(dist2) <- 0
+    if (sum(is.nan(dist2)) > 0) {
+        print("missing species!")
+        dist2[is.nan(dist2)] <- 10000
+    }
+    speciesdistance <- pair.dist.mulseq(dist2, species.structure)
+    tree <- write.tree(nj(speciesdistance))
+    node2name(tree, name = spname)
+}
+##########################################################################################
+
+
+pair.dist.nofreq.dm=function (dist, species.structure) #Returns a matrix of species comparisons with the sum of distances between all their gene copies
+{
+    dis <- round((species.structure) %*% dist %*% t(species.structure), 
+        8)
+    diag(dis) <- 0
+    dis
 }
 NJstM=function(genetrees,s_names,g_names,species.structure,method="original")
 {
@@ -81,7 +121,7 @@ NJstM.mapping=function(genetreesfile,mapping_file,method="original")
 	g_names=colnames(species.structure)
 	genetrees=read.tree.string(genetreesfile,format="phylip")
 	genetrees=genetrees$tree
-	if (method=="liu" || "Liu") {
+	if (method=="liu" || method=="Liu") {
 		NJst(genetrees,g_names,s_names,species.structure)
 	} else {
 		NJstM(genetrees,s_names,g_names,species.structure,method)
