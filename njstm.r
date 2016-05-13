@@ -56,7 +56,7 @@ NJst=function(genetrees, taxaname, spname, species.structure)
     }
     speciesdistance <- pair.dist.mulseq(dist2, species.structure)
     tree <- write.tree(nj(speciesdistance))
-    node2name(tree, name = spname)
+    #node2name(tree, name = spname) #DM: This is not necessary, since the nodes already have their names.
 }
 ##########################################################################################
 
@@ -339,7 +339,6 @@ NJstM=function(genetrees,s_names,g_names,species.structure,method="original")
         speciesdistance[is.nan(speciesdistance)] <- 10000
     }
     tree <- write.tree(nj(speciesdistance))
-    node2name(tree, name = s_names)
 }
 
 NJstM.mapping=function(genetreesfile,mapping_file,method="original")
