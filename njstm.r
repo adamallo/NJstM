@@ -1,6 +1,7 @@
 ###Original###
 library(phybase)
 
+# Original functions
 nancdist<-function(tree, taxaname)
 {
         ntaxa<-length(taxaname)
@@ -23,42 +24,44 @@ nancdist<-function(tree, taxaname)
         z
 }
 
+#Slightly modified functions
+##########################################################################################
+
 NJst=function(genetrees, taxaname, spname, species.structure) 
 {
-    ntree <- length(genetrees)
-    ntaxa <- length(taxaname)
-    dist <- matrix(0, nrow = ntree, ncol = ntaxa * ntaxa)
-    for (i in 1:ntree) {
-        genetree1 <- read.tree.nodes(genetrees[i])
-        thistreetaxa <- genetree1$names
-        ntaxaofthistree <- length(thistreetaxa)
-        thistreenode <- rep(-1, ntaxaofthistree)
-        dist1 <- matrix(0, ntaxa, ntaxa)
-        for (j in 1:ntaxaofthistree) {
-            thistreenode[j] <- which(taxaname == thistreetaxa[j])
-            if (length(thistreenode[j]) == 0) {
-                print(paste("wrong taxaname", thistreetaxa[j], 
-                  "in gene", i))
-                return(0)
-            }
-        }
-        dist1[thistreenode, thistreenode] <- nancdist(genetrees[i], 
-            thistreetaxa)$dist
-        dist[i, ] <- as.numeric(dist1)
+  ntree <- length(genetrees)
+  ntaxa <- length(taxaname)
+  dist <- matrix(0, nrow = ntree, ncol = ntaxa * ntaxa)
+  for (i in 1:ntree) {
+    genetree1 <- read.tree.nodes(genetrees[i])
+    thistreetaxa <- genetree1$names
+    ntaxaofthistree <- length(thistreetaxa)
+    thistreenode <- rep(-1, ntaxaofthistree)
+    dist1 <- matrix(0, ntaxa, ntaxa)
+    for (j in 1:ntaxaofthistree) {
+      thistreenode[j] <- which(taxaname == thistreetaxa[j])
+      if (length(thistreenode[j]) == 0) {
+        print(paste("wrong taxaname", thistreetaxa[j], 
+                    "in gene", i))
+        return(0)
+      }
     }
-    dist[dist == 0] <- NA
-    dist2 <- matrix(apply(dist, 2, mean, na.rm = TRUE), ntaxa, 
-        ntaxa)
-    diag(dist2) <- 0
-    if (sum(is.nan(dist2)) > 0) {
-        print("missing species!")
-        dist2[is.nan(dist2)] <- 10000
-    }
-    speciesdistance <- pair.dist.mulseq(dist2, species.structure)
-    tree <- write.tree(nj(speciesdistance))
-    #node2name(tree, name = spname) #DM: This is not necessary, since the nodes already have their names.
+    dist1[thistreenode, thistreenode] <- nancdist(genetrees[i], 
+                                                  thistreetaxa)$dist
+    dist[i, ] <- as.numeric(dist1)
+  }
+  dist[dist == 0] <- NA
+  dist2 <- matrix(apply(dist, 2, mean, na.rm = TRUE), ntaxa, 
+                  ntaxa)
+  diag(dist2) <- 0
+  if (sum(is.nan(dist2)) > 0) {
+    print("missing species!")
+    dist2[is.nan(dist2)] <- 10000
+  }
+  speciesdistance <- pair.dist.mulseq(dist2, species.structure)
+  tree <- write.tree(nj(speciesdistance))
+  node2name(tree, name = spname)
 }
-##########################################################################################
 
 read.tree.nodes=function (str, name = "") 
 {
@@ -288,6 +291,66 @@ read.tree.nodes=function (str, name = "")
     z
 }
 
+read.tree.string = function (file = "", format = "nexus") 
+{
+  X <- scan(file = file, what = "character", sep = "\n", quiet = TRUE)
+  X <- del.Comments(X)
+  if (length(grep("phylip", format, ignore.case = TRUE))) {
+    X <- paste(unlist(strsplit(paste(X, collapse = ""), split = ";")), 
+               ";", sep = "")
+    tree <- X
+    translation <- FALSE
+  }
+  else {
+    i1 <- grep("BEGIN TREES;", X, ignore.case = TRUE)
+    i2 <- grep("TRANSLATE", X, ignore.case = TRUE)
+    translation <- FALSE
+    if (length(i2) == 1 && length(i1) == 1) {
+      if (i2 > i1) 
+        translation <- TRUE
+    }
+    if (translation) {
+      semico <- grep(";", X)
+      end <- semico[semico > i2][1]
+      x <- X[(i2 + 1):end]
+      x <- unlist(strsplit(x, "[,; \t]"))
+      x <- x[nzchar(x)]
+      TRANS <- matrix(x, ncol = 2, byrow = TRUE)
+      TRANS[, 2] <- gsub("['\"]", "", TRANS[, 2])
+      nspecies <- dim(TRANS)[1]
+      speciesname <- TRANS[, 2]
+    }
+    tree <- X[grep("=", X)]
+    tree <- gsub(".*=", "", tree)
+  }
+  string <- unlist(strsplit(tree[1], NULL))
+  leftpar <- which(string == "(")
+  rightpar <- which(string == ")")
+  comma <- which(string == ",")
+  if (length(leftpar) != length(rightpar)) 
+    stop("The number of left parenthesis is NOT equal to the number of right  parenthesis")
+  if (length(leftpar) == length(comma)) 
+    rooted <- TRUE
+  else if (length(leftpar) == (length(comma) - 1)) 
+    rooted <- FALSE
+  else {
+    print("The tree is not a binary tree!")
+    rooted <- NA
+  }
+  z <- list(tree = "", names = "", root = TRUE)
+  if (!translation) {
+    speciesname <- species.name(tree[1])
+    z$tree <- tree
+  } else {
+    z$tree <- node2name(gsub(" ", "", tree), speciesname) ##Only Nexus trees have numerical nodes!
+  }
+  z$names <- speciesname
+  z$root <- rooted
+  z
+}
+
+#New functions
+###############
 
 pair.dist.nofreq.dm=function (dist, species.structure) #Returns a matrix of species comparisons with the sum of distances between all their gene copies
 {
@@ -296,6 +359,7 @@ pair.dist.nofreq.dm=function (dist, species.structure) #Returns a matrix of spec
     diag(dis) <- 0
     dis
 }
+
 NJstM=function(genetrees,s_names,g_names,species.structure,method="original")
 {
     ntree <- length(genetrees)
@@ -356,6 +420,9 @@ NJstM.mapping=function(genetreesfile,mapping_file,method="original")
 		NJstM(genetrees,s_names,g_names,species.structure,method)
 	}
 }
+
+#Main
+#####
 
 args <- commandArgs(TRUE)
 if (length(args)!=4){
