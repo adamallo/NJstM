@@ -38,6 +38,7 @@ Input file format:
 2_B B
 1_C C
 ```
+**Attention:** Due to an inherited limitation, gene-tree leaf names cannot be integers unless they represent node numbers. Species names can be either numeric or alphanumeric.
 
 If you code the gene copies and species using the same scheme than the one in the example (genecopy=id_species), you can generate the mapping file using the following bash line on the input tree file:
 `cat treefile |sed -e "s/:[^),]*//g" -e "s/)[0-9.]*//g" -e "s/[(,);]/ /g" -e 's/ /\'$'\n''/g' |sort|uniq|tail -n+2|gsed "s/.*\_\(.*\)$/& \1/" > mapping`
